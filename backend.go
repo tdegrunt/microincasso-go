@@ -95,20 +95,28 @@ func (s *InternalBackend) Call(method, path string, mireq *Request) (*Response, 
 	}
 	defer res.Body.Close()
 
-	resBody, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		log.Printf("Cannot parse response: %v\n", err)
-		return nil, err
-	}
-
-	if debug {
-		log.Printf("Response: %q\n", resBody)
-	}
+	log.Printf("Response status: %v\n", res.StatusCode)
 
 	var miresp Response
-	if err := xml.Unmarshal(resBody, &miresp); err != nil {
-		return nil, err
+	if res.ContentLength > 0 {
+		resBody, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			log.Printf("Cannot parse response: %v\n", err)
+			return nil, err
+		}
+
+		if debug {
+			log.Printf("Response: %q\n", resBody)
+		}
+
+		var miresp Response
+		if err := xml.Unmarshal(resBody, &miresp); err != nil {
+			return nil, err
+		}
+		return &miresp, nil
 	}
+
+	miresp.Status = res.StatusCode
 
 	return &miresp, nil
 }
