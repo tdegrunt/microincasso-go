@@ -29,6 +29,10 @@ func (u *User) Status() (UserStatus, error) {
 		return -1, err
 	}
 
+	if resp.IsError() {
+		return -1, resp.Error()
+	}
+
 	return UserStatus(resp.Status), nil
 }
 
@@ -66,6 +70,6 @@ func (u *User) getHashables() [][]byte {
 
 func newUserRequest(u *User) *Request {
 	req := &Request{Merchant: Merchant{Username: Username, Password: Password}, User: u}
-	req.Merchant.VerificationHash = req.getHash()
+	req.Merchant.VerificationHash = req.GetHash()
 	return req
 }

@@ -22,6 +22,6 @@ func (p *Payment) getHashables() [][]byte {
 
 func newPaymentRequest(p *Payment) *Request {
 	req := &Request{Merchant: Merchant{Username: Username, Password: Password}, Payment: p}
-	req.Merchant.VerificationHash = req.getHash()
+	req.Merchant.VerificationHash = req.GetHash()
 	return req
 }

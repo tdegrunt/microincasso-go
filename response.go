@@ -2,8 +2,14 @@ package microincasso
 
 import (
 	"encoding/xml"
+	"fmt"
 	"time"
 )
+
+type MicroIncassoError struct {
+	ErrorCode        int
+	ErrorDescription string
+}
 
 type Response struct {
 	XMLName         xml.Name   `xml:"MIRESPONSE"`
@@ -19,4 +25,12 @@ type Response struct {
 
 func (r *Response) IsError() bool {
 	return r.ErrorCode > 0
+}
+
+func (r *Response) Error() error {
+	return MicroIncassoError{ErrorCode: r.ErrorCode, ErrorDescription: r.ErrorDescription}
+}
+
+func (e MicroIncassoError) Error() string {
+	return fmt.Sprintf("%d: %s", e.ErrorCode, e.ErrorDescription)
 }

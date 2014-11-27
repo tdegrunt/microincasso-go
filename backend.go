@@ -55,24 +55,28 @@ func SetBackend(b Backend) {
 }
 
 func (s *InternalBackend) Call(method, path string, mireq *Request) (*Response, error) {
+	var miresp Response
+
 	if !strings.HasPrefix(path, "/") {
 		path = "/" + path
 	}
 
 	path = s.url + path
 
-	mireq.Merchant.VerificationHash = mireq.getHash()
-
 	b, err := xml.Marshal(mireq)
 	if err != nil {
 		return nil, err
 	}
 
+	buf := bytes.NewBuffer([]byte{})
+	buf.WriteString(xml.Header)
+	buf.Write(b)
+
 	if debug {
-		log.Printf("Request body: %s\n", b)
+		log.Printf("Request body: %s\n", buf.String())
 	}
 
-	req, err := http.NewRequest(method, path, bytes.NewBuffer(b))
+	req, err := http.NewRequest(method, path, buf)
 	if err != nil {
 		log.Printf("Cannot create request: %v\n", err)
 		return nil, err
@@ -96,27 +100,21 @@ func (s *InternalBackend) Call(method, path string, mireq *Request) (*Response, 
 	defer res.Body.Close()
 
 	log.Printf("Response status: %v\n", res.StatusCode)
+	log.Printf("Response ContentLength: %v\n", res.ContentLength)
 
-	var miresp Response
-	if res.ContentLength > 0 {
-		resBody, err := ioutil.ReadAll(res.Body)
-		if err != nil {
-			log.Printf("Cannot parse response: %v\n", err)
-			return nil, err
-		}
-
-		if debug {
-			log.Printf("Response: %q\n", resBody)
-		}
-
-		var miresp Response
-		if err := xml.Unmarshal(resBody, &miresp); err != nil {
-			return nil, err
-		}
-		return &miresp, nil
+	resBody, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		log.Printf("Cannot parse response: %v\n", err)
+		return nil, err
 	}
 
-	miresp.Status = res.StatusCode
+	if debug {
+		log.Printf("Response: %q\n", resBody)
+	}
 
+	if err := xml.Unmarshal(resBody, &miresp); err != nil {
+		return nil, err
+	}
 	return &miresp, nil
+
 }

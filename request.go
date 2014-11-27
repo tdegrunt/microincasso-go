@@ -3,6 +3,7 @@ package microincasso
 import (
 	"encoding/hex"
 	"encoding/xml"
+	"fmt"
 	"hash"
 
 	"crypto/sha256"
@@ -21,7 +22,7 @@ type Request struct {
 	Payment  *Payment `xml:"PAYMENT"`
 }
 
-func (r *Request) getHash() string {
+func (r *Request) GetHash() string {
 
 	hashables := [][]byte{[]byte(r.Merchant.Username), []byte(r.Merchant.Password)}
 
@@ -33,7 +34,10 @@ func (r *Request) getHash() string {
 
 	var h hash.Hash = sha256.New()
 	for _, v := range hashables {
-		h.Write(v)
+		if len(v) > 0 {
+			fmt.Printf("hashable: %s\n", v)
+			h.Write(v)
+		}
 	}
 	result := hex.EncodeToString(h.Sum([]byte{}))
 
