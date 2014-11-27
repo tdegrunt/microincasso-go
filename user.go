@@ -46,6 +46,10 @@ func (u *User) Register() (UserStatus, error) {
 		return -1, err
 	}
 
+	if resp.IsError() {
+		return -1, resp.Error()
+	}
+
 	return UserStatus(resp.Status), nil
 }
 
