@@ -5,19 +5,30 @@ import "fmt"
 type Payment struct {
 	Enduser string `xml:"ENDUSER"`
 	Amount  int    `xml:"AMOUNT"`
+	Test    int    `xml:"TEST"`
 }
 
 // New payment for a registered end-user
-func (p *Payment) New() (*Response, error) {
+func (p *Payment) New() (*string, error) {
 	req := newPaymentRequest(p)
 
 	be := GetBackend()
-	return be.Call("POST", "/RegisteredPayment/", req)
+	resp, err := be.Call("POST", "/RegisteredPayment/", req)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.IsError() {
+		return nil, resp.Error()
+	}
+
+	return resp.Reference, nil
 }
 
 func (p *Payment) getHashables() [][]byte {
 	amount := fmt.Sprintf("%d", p.Amount)
-	return [][]byte{[]byte(p.Enduser), []byte(amount)}
+	test := fmt.Sprintf("%d", p.Test)
+	return [][]byte{[]byte(p.Enduser), []byte(amount), []byte(test)}
 }
 
 func newPaymentRequest(p *Payment) *Request {

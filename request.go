@@ -30,12 +30,18 @@ func (r *Request) GetHash() string {
 		hashables = ConcatenateBytes(hashables, r.User.getHashables())
 	}
 
+	if r.Payment != nil {
+		hashables = ConcatenateBytes(hashables, r.Payment.getHashables())
+	}
+
 	hashables = append(hashables, []byte(Secret))
 
 	var h hash.Hash = sha256.New()
 	for _, v := range hashables {
 		if len(v) > 0 {
-			fmt.Printf("hashable: %s\n", v)
+			if debug {
+				fmt.Printf("hashable: %+s\n", v)
+			}
 			h.Write(v)
 		}
 	}

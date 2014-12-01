@@ -83,9 +83,13 @@ func (s *InternalBackend) Call(method, path string, mireq *Request) (*Response, 
 	}
 
 	req.Header.Add("User-Agent", "Microincasso/v1") // GoBindings/"+clientversion)
+	req.Header.Add("Content-Type", "text/xml")
 
-	log.Printf("Requesting %v %q\n", method, path)
-	start := time.Now()
+	var start time.Time
+	if debug {
+		log.Printf("Requesting %v %q\n", method, path)
+		start = time.Now()
+	}
 
 	res, err := s.httpClient.Do(req)
 
@@ -99,8 +103,10 @@ func (s *InternalBackend) Call(method, path string, mireq *Request) (*Response, 
 	}
 	defer res.Body.Close()
 
-	log.Printf("Response status: %v\n", res.StatusCode)
-	log.Printf("Response ContentLength: %v\n", res.ContentLength)
+	if debug {
+		log.Printf("Response status: %v\n", res.StatusCode)
+		log.Printf("Response ContentLength: %v\n", res.ContentLength)
+	}
 
 	resBody, err := ioutil.ReadAll(res.Body)
 	if err != nil {
@@ -112,9 +118,14 @@ func (s *InternalBackend) Call(method, path string, mireq *Request) (*Response, 
 		log.Printf("Response: %q\n", resBody)
 	}
 
-	if err := xml.Unmarshal(resBody, &miresp); err != nil {
-		return nil, err
+	if len(resBody) > 2 {
+		if err := xml.Unmarshal(resBody, &miresp); err != nil {
+			return nil, err
+		}
+	} else {
+		miresp.Status = res.StatusCode
 	}
+
 	return &miresp, nil
 
 }

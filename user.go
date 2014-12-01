@@ -1,20 +1,21 @@
 package microincasso
 
-import "errors"
+import (
+	"errors"
+)
 
 type UserStatus int
 
 const (
-	NoUser                 UserStatus = iota // No Microincasso end-user present
-	UnwantedUser                             // Found Microincasso end-user is an unwanted end-user and is blocked for further actions with Microincasso.
-	NewUser                                  // Microincasso end-user found but it needs a valid IBAN before any further actions could be done.
-	FullUser                                 // Microincasso end-user found and has a valid MSISDN and IBAN, but it is not registered for the current merchant.
-	FullRegisteredUser                       // Microincasso end-user found and has a valid MSISDN and IBAN and is registered for the current merchant.
-	TemporarilyBlockedUser                   // Microincasso end-user is temporarily blocked due to an unperformed action. (E.g. a one-cent-check is required but not finalized by the end-user self).
+	UserStatusNoUser                 UserStatus = iota // No Microincasso end-user present
+	UserStatusUnwantedUser                             // Found Microincasso end-user is an unwanted end-user and is blocked for further actions with Microincasso.
+	UserStatusNewUser                                  // Microincasso end-user found but it needs a valid IBAN before any further actions could be done.
+	UserStatusFullUser                                 // Microincasso end-user found and has a valid MSISDN and IBAN, but it is not registered for the current merchant.
+	UserStatusFullRegisteredUser                       // Microincasso end-user found and has a valid MSISDN and IBAN and is registered for the current merchant.
+	UserStatusTemporarilyBlockedUser                   // Microincasso end-user is temporarily blocked due to an unperformed action. (E.g. a one-cent-check is required but not finalized by the end-user self).
 )
 
 type User struct {
-	//Status    UserStatus
 	Reference string `xml:"REFERENCE"`
 	Iban      string `xml:"IBAN,omitempty"`
 }
