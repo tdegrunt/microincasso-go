@@ -22,6 +22,7 @@ type Request struct {
 	Payment  *Payment `xml:"PAYMENT"`
 }
 
+// Returns the verification hash for this request
 func (r *Request) GetHash() string {
 
 	hashables := [][]byte{[]byte(r.Merchant.Username), []byte(r.Merchant.Password)}
